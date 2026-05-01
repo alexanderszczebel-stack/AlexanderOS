@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alexander OS">
+<title>Alexander OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g:#1D9E75;--gl:#E1F5EE;--gd:#085041;
+  --p:#7F77DD;--pl:#EEEDFE;--pd:#3C3489;
+  --a:#EF9F27;--al:#FAEEDA;--ad:#633806;
+  --b:#378ADD;--bl:#E6F1FB;--bd:#0C447C;
+  --txt:#f0f0ee;--txt2:rgba(240,240,238,.5);
+  --card:rgba(255,255,255,.07);--cardb:rgba(255,255,255,.12);
+  --brd:rgba(255,255,255,.1);--brd2:rgba(255,255,255,.18);
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;color:var(--txt);overflow:hidden;background:#09090f}
+.app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-base{position:absolute;inset:0;background:linear-gradient(160deg,#09090f 0%,#0f102a 35%,#0a1a30 65%,#09090f 100%)}
+.orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5}
+.orb1{width:300px;height:300px;background:radial-gradient(circle,#3C3489,transparent 70%);top:-80px;right:-60px;animation:d1 14s ease-in-out infinite alternate}
+.orb2{width:250px;height:250px;background:radial-gradient(circle,#085041,transparent 70%);bottom:120px;left:-80px;animation:d2 18s ease-in-out infinite alternate}
+.orb3{width:180px;height:180px;background:radial-gradient(circle,#0C447C,transparent 70%);bottom:-40px;right:20px;animation:d3 22s ease-in-out infinite alternate}
+@keyframes d1{from{transform:translate(0,0)}to{transform:translate(30px,40px)}}
+@keyframes d2{from{transform:translate(0,0)}to{transform:translate(40px,-30px)}}
+@keyframes d3{from{transform:translate(0,0)}to{transform:translate(-20px,20px)}}
+.grain{position:absolute;inset:0;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.screen{display:none;flex:1;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:fu .3s ease;position:relative;z-index:1}
+.screen.active{display:flex}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes si{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.nav{display:flex;border-top:0.5px solid var(--brd);background:rgba(9,9,15,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);position:relative;z-index:2}
+.nb{flex:1;padding:10px 2px 8px;border:none;background:transparent;cursor:pointer;font-size:9px;color:var(--txt2);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'DM Sans',sans-serif;letter-spacing:.04em;transition:color .2s}
+.nb.active{color:var(--txt)}
+.nb-dot{width:3px;height:3px;border-radius:50%;background:var(--g);opacity:0;transition:opacity .2s}
+.nb.active .nb-dot{opacity:1}
+
+.qhero{padding:22px 20px 18px;border-bottom:0.5px solid var(--brd)}
+.qlabel{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt2);margin-bottom:10px}
+.qtext{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1.15;color:var(--txt);margin-bottom:10px;letter-spacing:.02em}
+.qtext.it{font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;letter-spacing:0;line-height:1.5;font-weight:400}
+.qauthor{font-family:'Space Mono',monospace;font-size:10px;color:var(--txt2);letter-spacing:.06em}
+.qdots{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}
+.qdot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;border:none;padding:0;transition:background .2s}
+.qdot.on{background:rgba(255,255,255,.85)}
+
+.pad{padding:14px 16px 0}
+.sep{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt2);margin-bottom:10px;margin-top:4px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.scard{border-radius:14px;padding:14px 15px;position:relative;overflow:hidden;backdrop-filter:blur(10px)}
+.scard.green{background:rgba(8,80,65,.4);border:0.5px solid rgba(29,158,117,.3)}
+.scard.blue{background:rgba(12,68,124,.4);border:0.5px solid rgba(55,138,221,.3)}
+.sv{font-family:'DM Serif Display',serif;font-size:26px;line-height:1;margin-bottom:4px;color:var(--txt)}
+.sl{font-size:11px;color:var(--txt2)}
+.sbarb{position:absolute;bottom:0;left:0;height:3px;border-radius:0 3px 0 0;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.scard.green .sbarb{background:var(--g)}
+.scard.blue .sbarb{background:var(--b)}
+
+.nnlist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:0 16px}
+.nn{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:0.5px solid var(--brd);border-radius:14px;cursor:pointer;transition:all .2s;animation:si .3s ease both;-webkit-user-select:none;user-select:none;backdrop-filter:blur(8px)}
+.nn:active{transform:scale(.98)}
+.nn.done{opacity:.5}
+.chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--brd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:11px;color:#fff;font-weight:600}
+.nn.done .chk{background:var(--g);border-color:var(--g)}
+.nb2{flex:1;min-width:0}
+.nnn{font-size:13px;font-weight:500;color:var(--txt);transition:all .2s}
+.nn.done .nnn{color:var(--txt2);text-decoration:line-through}
+.nns{font-size:11px;color:var(--txt2);margin-top:1px}
+.pill{font-size:10px;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;font-weight:500}
+.pm{background:rgba(213,90,48,.2);color:#F0997B;border:0.5px solid rgba(213,90,48,.3)}
+.pb{background:rgba(29,158,117,.2);color:#5DCAA5;border:0.5px solid rgba(29,158,117,.3)}
+.ph{background:rgba(55,138,221,.2);color:#85B7EB;border:0.5px solid rgba(55,138,221,.3)}
+.pbw{background:rgba(255,255,255,.08);border-radius:3px;height:3px;margin:4px 0 14px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;background:var(--g);transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+.xpblock{border-radius:14px;padding:15px 16px;margin-bottom:10px;border:0.5px solid var(--brd);backdrop-filter:blur(10px)}
+.xpblock.green{background:rgba(8,80,65,.35)}
+.xpblock.purple{background:rgba(60,52,137,.35)}
+.xprow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.xptitle{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:2px}
+.xppct{font-family:'DM Serif Display',serif;font-size:24px;color:var(--txt);transition:all .3s}
+.xppct.pop{animation:pop .4s ease}
+.xpbw{border-radius:4px;height:5px;overflow:hidden;margin-bottom:8px;background:rgba(255,255,255,.08)}
+.xpb{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.xpblock.green .xpb{background:var(--g)}
+.xpblock.purple .xpb{background:var(--p)}
+.xpsub{font-size:11px;color:var(--txt2);line-height:1.5}
+.xpgain{display:inline-block;font-size:10px;font-family:'Space Mono',monospace;color:var(--g);opacity:0;transition:opacity .4s;margin-top:2px}
+.xpgain.show{opacity:1}
+
+/* MOMENT TABS */
+.mtabs{display:flex;gap:6px;padding:0 16px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mtabs::-webkit-scrollbar{display:none}
+.mtab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--brd);background:transparent;color:var(--txt2);font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.mtab.active{background:rgba(255,255,255,.12);color:var(--txt);border-color:var(--brd2)}
+
+.rcardw{margin:0 16px 14px;padding:16px;border-radius:16px;background:var(--card);border:0.5px solid var(--brd);backdrop-filter:blur(12px)}
+.rstep{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--brd)}
+.rstep:last-child{border-bottom:none;padding-bottom:0}
+.rstep:first-child{padding-top:0}
+.rnum{font-family:'Space Mono',monospace;font-size:10px;color:var(--g);font-weight:600;width:18px;flex-shrink:0;margin-top:2px}
+.rtxt{font-size:13px;color:var(--txt);font-weight:500;line-height:1.4}
+.rsub{font-size:11px;color:var(--txt2);margin-top:2px;line-height:1.4}
+
+/* FOCUS */
+.focus-card{margin:0 16px 12px;border-radius:16px;overflow:hidden;background:rgba(60,52,137,.25);border:0.5px solid rgba(127,119,221,.25);backdrop-filter:blur(12px)}
+.focus-hdr{padding:14px 16px 12px;border-bottom:0.5px solid rgba(127,119,221,.15)}
+.focus-title{font-size:14px;font-weight:500;color:var(--txt);margin-bottom:2px}
+.focus-sub{font-size:11px;color:var(--txt2)}
+.focus-inp{width:100%;background:rgba(255,255,255,.06);border:none;border-bottom:0.5px solid rgba(127,119,221,.2);padding:12px 16px;color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif}
+.focus-inp::placeholder{color:var(--txt2)}
+.ritual-list{padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.fstep{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);font-size:13px;color:var(--txt2)}
+.fstep.active{background:rgba(127,119,221,.2);color:var(--txt);border:0.5px solid rgba(127,119,221,.3)}
+.commit-btn{width:calc(100% - 32px);margin:0 16px 12px;padding:13px;background:rgba(127,119,221,.75);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .15s}
+.commit-btn:active{transform:scale(.97)}
+
+.breakdown{margin:0 16px 12px;padding:14px 16px;border-radius:14px;background:rgba(8,80,65,.3);border:0.5px solid rgba(29,158,117,.2);backdrop-filter:blur(10px);display:none}
+.breakdown.on{display:block}
+.breakdown-title{font-size:10px;font-weight:500;color:#5DCAA5;margin-bottom:10px;font-family:'Space Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+.ts{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid rgba(29,158,117,.12)}
+.ts:last-child{border-bottom:none}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;margin-top:5px}
+.ttxt{font-size:13px;color:var(--txt);line-height:1.4}
+
+.cdwrap{margin:0 16px 12px;background:rgba(9,9,15,.6);border:0.5px solid var(--brd);border-radius:16px;padding:20px;text-align:center;backdrop-filter:blur(16px);display:none}
+.cdwrap.on{display:block}
+.cdlbl{font-family:'Space Mono',monospace;font-size:10px;color:var(--txt2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.cdnum{font-family:'DM Serif Display',serif;font-size:44px;color:var(--txt);margin-bottom:6px}
+.cdmsg{font-size:12px;color:var(--txt2);line-height:1.5;margin-bottom:14px}
+.cdbtn{width:100%;padding:12px;background:rgba(127,119,221,.7);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+.timer-wrap{background:rgba(9,9,15,.6);margin:0 16px;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;border:0.5px solid var(--brd);backdrop-filter:blur(16px)}
+.timer-big{font-family:'DM Serif Display',serif;font-size:56px;color:var(--txt);letter-spacing:-.02em;line-height:1}
+.timer-sub{font-size:12px;color:var(--txt2);margin-top:8px;margin-bottom:16px;line-height:1.5}
+.tbtns{display:flex;gap:8px}
+.tbp{flex:1;padding:11px;background:rgba(255,255,255,.08);color:var(--txt);border:0.5px solid var(--brd2);border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.tbp:active{opacity:.7}
+.tbp.p{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25)}
+.tpw{background:rgba(255,255,255,.08);border-radius:3px;height:3px;margin-top:14px;overflow:hidden}
+.tpf{height:100%;border-radius:3px;background:rgba(127,119,221,.8);transition:width .5s}
+
+.plan-card{margin:0 16px 14px;padding:15px 16px;border-radius:14px;background:rgba(99,56,6,.3);border:0.5px solid rgba(239,159,39,.2);backdrop-filter:blur(10px)}
+.plan-lbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(239,159,39,.6);margin-bottom:10px}
+.plan-fi{width:100%;padding:9px 12px;border:0.5px solid rgba(239,159,39,.2);border-radius:10px;background:rgba(255,255,255,.05);color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:8px}
+.plan-fi::placeholder{color:var(--txt2)}
+textarea.plan-fi{min-height:68px;resize:none;line-height:1.5}
+.plan-save{width:100%;padding:10px;background:rgba(239,159,39,.65);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.plan-save:active{opacity:.8}
+.plan-entries{padding:0 16px;display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.pentry{background:var(--card);border:0.5px solid var(--brd);border-radius:12px;padding:12px 14px;animation:si .3s ease;backdrop-filter:blur(8px)}
+.pentry-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--a);margin-bottom:5px}
+.pentry-txt{font-size:13px;color:var(--txt);line-height:1.55}
+
+.chat-wrap{padding:0 16px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:140px;margin-bottom:8px}
+.msg{padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.55;animation:fu .3s ease;max-width:88%}
+.msg.ai{background:var(--card);color:var(--txt);border:0.5px solid var(--brd);border-bottom-left-radius:4px;align-self:flex-start;backdrop-filter:blur(8px)}
+.msg.user{background:rgba(29,158,117,.65);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.cirow{display:flex;gap:8px;padding:10px 16px;border-top:0.5px solid var(--brd);background:rgba(9,9,15,.75);backdrop-filter:blur(20px)}
+.ci{flex:1;padding:10px 13px;border:0.5px solid var(--brd2);border-radius:20px;background:rgba(255,255,255,.06);color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif}
+.ci::placeholder{color:var(--txt2)}
+.sb{width:38px;height:38px;border-radius:50%;background:var(--g);border:none;cursor:pointer;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb:active{opacity:.7}
+
+.biz-m{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.bm{background:rgba(60,52,137,.35);border:0.5px solid rgba(127,119,221,.2);border-radius:14px;padding:14px;text-align:center;backdrop-filter:blur(8px)}
+.bmv{font-family:'DM Serif Display',serif;font-size:28px;color:var(--txt)}
+.bml{font-size:11px;color:var(--txt2);margin-top:3px}
+.ob{width:100%;padding:13px;background:rgba(127,119,221,.65);color:#fff;border:0.5px solid rgba(127,119,221,.35);border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px}
+.ob:active{opacity:.8}
+.stxt{font-size:11px;color:var(--txt2);font-style:italic;min-height:16px;text-align:center;margin-bottom:12px}
+
+.witem{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:0.5px solid var(--brd);border-radius:12px;cursor:pointer;transition:all .2s;margin-bottom:8px;backdrop-filter:blur(8px)}
+.witem:active{transform:scale(.98)}
+.witem.done{background:rgba(8,80,65,.3);border-color:rgba(29,158,117,.2)}
+.wchk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--brd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:11px;color:#fff;font-weight:600}
+.witem.done .wchk{background:var(--g);border-color:var(--g)}
+.wname{font-size:13px;font-weight:500;color:var(--txt);flex:1}
+.wdet{font-size:11px;color:var(--txt2);margin-top:1px}
+.gen-btn{width:100%;padding:12px;background:rgba(29,158,117,.55);color:#fff;border:0.5px solid rgba(29,158,117,.35);border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:6px}
+.gen-btn:active{opacity:.8}
+
+.cal-hero{background:rgba(99,56,6,.35);border:0.5px solid rgba(239,159,39,.2);border-radius:14px;padding:15px 16px;margin-bottom:12px;backdrop-filter:blur(10px)}
+.cal-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+.cal-num{font-family:'DM Serif Display',serif;font-size:32px;color:var(--txt);line-height:1}
+.cal-bw{background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden}
+.cal-bf{height:100%;border-radius:4px;background:var(--a);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.fi-row{display:flex;gap:8px;margin-bottom:8px}
+.fi{flex:1;padding:10px 13px;border:0.5px solid var(--brd2);border-radius:12px;background:rgba(255,255,255,.06);color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif}
+.fi::placeholder{color:var(--txt2)}
+.fa{padding:10px 15px;background:rgba(239,159,39,.65);color:#fff;border:0.5px solid rgba(239,159,39,.35);border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.fa:active{opacity:.8}
+.food-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:0.5px solid var(--brd);border-radius:12px;margin-bottom:7px;background:var(--card);animation:si .3s ease;backdrop-filter:blur(8px)}
+.fdel{background:none;border:none;color:var(--txt2);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+
+.nic-card{background:rgba(9,9,15,.55);border:0.5px solid var(--brd);border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;backdrop-filter:blur(16px)}
+.nic-n{font-family:'DM Serif Display',serif;font-size:60px;color:var(--txt);line-height:1}
+.nic-l{font-family:'Space Mono',monospace;font-size:10px;color:var(--txt2);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
+.nic-m{font-size:13px;color:var(--txt2);margin:10px 0 16px;line-height:1.6}
+.nic-btns{display:flex;gap:8px}
+.nbtn{flex:1;padding:11px;border:0.5px solid var(--brd2);background:rgba(255,255,255,.07);color:var(--txt);border-radius:10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.nbtn:active{opacity:.7}
+
+.niinp{width:100%;padding:11px 14px;border:0.5px solid var(--brd2);border-radius:12px;background:rgba(255,255,255,.06);color:var(--txt);font-size:13px;margin-bottom:8px;font-family:'DM Sans',sans-serif;outline:none;min-height:72px;resize:none;line-height:1.5}
+.niinp::placeholder{color:var(--txt2)}
+.btnf{width:100%;padding:12px;background:rgba(255,255,255,.1);color:var(--txt);border:0.5px solid var(--brd2);border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:12px}
+.btnf:active{opacity:.75}
+.nitem{padding:12px 14px;border:0.5px solid var(--brd);border-radius:12px;margin-bottom:8px;background:var(--card);animation:si .3s ease;backdrop-filter:blur(8px)}
+.ndate{font-family:'Space Mono',monospace;font-size:10px;color:var(--txt2);margin-bottom:4px}
+.ntxt{font-size:13px;color:var(--txt);line-height:1.55}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;backdrop-filter:blur(10px)}
+.modal{background:rgba(20,20,35,.97);border:0.5px solid var(--brd2);border-radius:20px;padding:24px;max-width:340px;width:100%}
+.modal h2{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px;color:var(--txt)}
+.modal p{font-size:13px;color:var(--txt2);line-height:1.6;margin-bottom:14px}
+.modal input{width:100%;padding:11px 14px;border:0.5px solid var(--brd2);border-radius:12px;background:rgba(255,255,255,.06);color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:12px}
+.modal input::placeholder{color:var(--txt2)}
+.modal button{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+</style>
+</head>
+<body>
+</div>
+
+<div class="app">
+<div class="bg"><div class="bg-base"></div><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="grain"></div></div>
+
+<!-- DZIŚ -->
+<div id="s-today" class="screen active">
+  <div class="qhero">
+    <div class="qlabel">Cytat dnia</div>
+    <div class="qtext" id="q-text">WE SUFFER MORE IN IMAGINATION THAN IN REALITY.</div>
+    <div class="qauthor" id="q-author">— Seneca</div>
+    <div class="qdots" id="q-dots"></div>
+  </div>
+  <div class="pad">
+    <div class="sep" style="margin-top:14px">Dziś, <span id="today-str"></span></div>
+    <div class="g2">
+      <div class="scard green"><div class="sv" id="h-nn">0/5</div><div class="sl">non-negotiables</div><div class="sbarb" id="h-nn-bar" style="width:0%"></div></div>
+      <div class="scard blue"><div class="sv" id="h-nic">0</div><div class="sl">dni bez nikotyny</div><div class="sbarb" style="width:80%"></div></div>
+    </div>
+    <div class="sep">Non-negotiables</div>
+  </div>
+  <div class="nnlist">
+    <div class="nn" onclick="toggleNN(this,'read')" style="animation-delay:.04s"><div class="chk"></div><div class="nb2"><div class="nnn">30 stron czytania</div><div class="nns">Każdego dnia, bez wyjątku</div></div><span class="pill pm">Must</span></div>
+    <div class="nn" onclick="toggleNN(this,'journal')" style="animation-delay:.08s"><div class="chk"></div><div class="nb2"><div class="nnn">Journal dnia</div><div class="nns">Refleksja przed snem</div></div><span class="pill pm">Must</span></div>
+    <div class="nn" onclick="toggleNN(this,'nic')" style="animation-delay:.12s"><div class="chk"></div><div class="nb2"><div class="nnn">Zero nikotyny</div><div class="nns">Mózg, kasa, wizerunek</div></div><span class="pill ph">Zdrowie</span></div>
+    <div class="nn" onclick="toggleNN(this,'cli')" style="animation-delay:.16s"><div class="chk"></div><div class="nb2"><div class="nnn">5 wiadomości do klientów</div><div class="nns">Useme / axario.pl</div></div><span class="pill pb">Biznes</span></div>
+    <div class="nn" onclick="toggleNN(this,'wrk')" style="animation-delay:.20s"><div class="chk"></div><div class="nb2"><div class="nnn">Trening dziś</div><div class="nns">Rower, hantle, roller</div></div><span class="pill ph">Zdrowie</span></div>
+  </div>
+  <div style="padding:0 16px 20px">
+    <div class="pbw"><div class="pbf" id="nn-bar" style="width:0%"></div></div>
+    <div style="font-size:11px;color:var(--txt2)" id="nn-lbl">0 z 5 ukończonych</div>
+  </div>
+</div>
+
+<!-- RUTYNA -->
+<div id="s-routine" class="screen">
+  <div class="qhero">
+    <div class="qlabel">Rutyna & Focus</div>
+    <div class="qtext it">The secret of getting ahead is getting started.</div>
+    <div class="qauthor">— Mark Twain</div>
+  </div>
+  <div class="pad"><div class="sep" style="margin-top:14px">Wybierz moment</div></div>
+  <div class="mtabs">
+    <button class="mtab active" onclick="setMoment(this,'morning')">🌅 Rano</button>
+    <button class="mtab" onclick="setMoment(this,'home')">🏠 Powrót do domu</button>
+    <button class="mtab" onclick="setMoment(this,'weekend')">☕ Weekend / wolne</button>
+  </div>
+  <div class="rcardw" id="routine-steps"></div>
+
+  <div class="pad" style="margin-top:6px"><div class="sep">System focus — wciągnij się do pracy</div></div>
+  <div class="focus-card">
+    <div class="focus-hdr">
+      <div class="focus-title">Co chcesz dziś zrobić?</div>
+      <div class="focus-sub">AI rozbije to na konkretne mikrokroki</div>
+    </div>
+    <input class="focus-inp" type="text" id="focus-task" placeholder="np. napisać ofertę dla kliniki fizjo..." onkeydown="if(event.key==='Enter')breakdownTask()"/>
+    <div class="ritual-list">
+      <div class="fstep">☕ Kawa lub woda — przygotuj się fizycznie</div>
+      <div class="fstep">💺 Usiądź przy biurku — telefon twarzą w dół</div>
+      <div class="fstep">🎵 Włącz muzykę do skupienia (lo-fi / biały szum)</div>
+      <div class="fstep active">⚡ Wpisz zadanie powyżej → rozbij na kroki → zacznij</div>
+    </div>
+  </div>
+  <button class="commit-btn" onclick="breakdownTask()">Rozbij zadanie na kroki →</button>
+
+  <div class="breakdown" id="breakdown">
+    <div class="breakdown-title">Twój plan na teraz</div>
+    <div id="breakdown-steps"></div>
+  </div>
+
+  <div class="cdwrap" id="cdwrap">
+    <div class="cdlbl">Zaczynasz za</div>
+    <div class="cdnum" id="cd-num">5:00</div>
+    <div class="cdmsg" id="cd-msg">Przygotuj się. Za 5 minut nie ma już wymówek.</div>
+    <button class="cdbtn" onclick="skipCD()">Zaczynasz wcześniej? Start teraz →</button>
+  </div>
+
+  <div class="pad"><div class="sep">Pomodoro 25 min</div></div>
+  <div class="timer-wrap">
+    <div class="timer-big" id="r-timer">25:00</div>
+    <div class="timer-sub">Jeden blok. Nie cały wieczór.</div>
+    <div class="tbtns">
+      <button class="tbp p" id="r-btn" onclick="toggleTimer()">Start</button>
+      <button class="tbp" onclick="resetTimer()">Reset</button>
+    </div>
+    <div class="tpw"><div class="tpf" id="t-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="pad"><div class="sep">Plan na jutro</div></div>
+  <div class="plan-card">
+    <div class="plan-lbl">Zapisz co jutro zrobisz</div>
+    <input type="text" class="plan-fi" id="plan-date" placeholder="Data (np. sobota 3 maja)" style="display:block"/>
+    <textarea class="plan-fi" id="plan-inp" placeholder="Treningi, praca, spotkania..."></textarea>
+    <button class="plan-save" onclick="savePlan()">Zapisz plan</button>
+  </div>
+  <div class="plan-entries" id="plan-entries"></div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- MENTOR -->
+<div id="s-mentor" class="screen">
+  <div class="qhero">
+    <div class="qlabel">Mentor AI</div>
+    <div class="qtext">NO ONE IS COMING TO SAVE YOU.</div>
+    <div class="qauthor">— mantra</div>
+  </div>
+  <div class="pad"><div class="sep" style="margin-top:14px">Napisz co blokuje</div></div>
+  <div class="chat-wrap" id="mentor-msgs">
+    <div class="msg ai">Cześć Alexander. Wiem że budowanie agencji AI bywa frustrujące — wyniki nie przychodzą w tydzień. Nad czym dziś pracujesz?</div>
+  </div>
+  <div class="cirow">
+    <input class="ci" type="text" id="mentor-inp" placeholder="Co Cię blokuje?" onkeydown="if(event.key==='Enter')sendMentor()"/>
+    <button class="sb" onclick="sendMentor()">↑</button>
+  </div>
+</div>
+
+<!-- AGENCJA -->
+<div id="s-biz" class="screen">
+  <div class="qhero">
+    <div class="qlabel">AI Agency — Axario</div>
+    <div class="qtext">TO BECOME A STAR YOU MUST BURN.</div>
+  </div>
+  <div class="pad" style="padding-bottom:0">
+    <div class="sep" style="margin-top:14px">Outreach tracker</div>
+    <div class="biz-m">
+      <div class="bm"><div class="bmv" id="biz-t">0</div><div class="bml">dziś</div></div>
+      <div class="bm"><div class="bmv" id="biz-a">0</div><div class="bml">łącznie</div></div>
+    </div>
+    <div class="pbw" style="margin-bottom:12px"><div class="pbf" id="biz-bar" style="width:0%;background:var(--p)"></div></div>
+    <button class="ob" onclick="addContact()">+ Wysłałem wiadomość do klienta</button>
+    <div class="stxt" id="biz-tip">Cel: 5 wiadomości dziennie.</div>
+    <div class="sep">Postęp agencji</div>
+    <div class="xpblock purple">
+      <div class="xprow"><div><div class="xptitle">AI Agency</div><div class="xpsub">Outreach + zadania codzienne</div></div><div style="text-align:right"><div class="xppct" id="agency-pct">0.0%</div><span class="xpgain" id="agency-gain"></span></div></div>
+      <div class="xpbw"><div class="xpb" id="agency-bar" style="width:0%"></div></div>
+      <div class="xpsub">+0.5% za 5 klientów · +0.3% za NN 5/5 · +0.2% za trening</div>
+    </div>
+    <div class="sep">Postęp sylwetki</div>
+    <div class="xpblock green" style="margin-bottom:20px">
+      <div class="xprow"><div><div class="xptitle">Sylwetka</div><div class="xpsub">Trening + kalorie + konsekwencja</div></div><div style="text-align:right"><div class="xppct" id="body-pct">0.0%</div><span class="xpgain" id="body-gain"></span></div></div>
+      <div class="xpbw"><div class="xpb" id="body-bar" style="width:0%"></div></div>
+      <div class="xpsub">+0.3% trening · +0.2% kalorie 1500–2000 · +0.2% NN 5/5</div>
+    </div>
+  </div>
+</div>
+
+<!-- ŻYCIE -->
+<div id="s-life" class="screen">
+  <div class="qhero">
+    <div class="qlabel">Życie</div>
+    <div class="qtext it">I was born to be great.</div>
+  </div>
+  <div class="pad" style="padding-top:16px">
+    <div class="sep">Trening dziś</div>
+    <div id="w-list" style="margin-bottom:8px">
+      <div class="witem" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Rowerek — cardio</div><div class="wdet">20 min, równe tempo</div></div></div>
+      <div class="witem" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Curl biceps — hantle 7kg</div><div class="wdet">4 × 12 powtórzeń</div></div></div>
+      <div class="witem" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Pompki</div><div class="wdet">4 × 15 powtórzeń</div></div></div>
+      <div class="witem" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Plank</div><div class="wdet">3 × 45 sekund</div></div></div>
+      <div class="witem" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Roller — kręgosłup</div><div class="wdet">10 min rozciąganie</div></div></div>
+    </div>
+    <button class="gen-btn" onclick="genWorkout()">✦ Generuj plan AI na dziś</button>
+    <div class="stxt" id="w-status" style="margin-bottom:12px"></div>
+    <div class="sep">Kalorie — cel 2000 kcal</div>
+    <div class="cal-hero">
+      <div class="cal-row">
+        <div><div class="cal-num" id="cal-e">0</div><div style="font-size:11px;color:var(--txt2);margin-top:2px">kcal zjedzone</div></div>
+        <div style="text-align:right"><div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--txt)" id="cal-r">2000</div><div style="font-size:11px;color:var(--txt2)">pozostało</div></div>
+      </div>
+      <div class="cal-bw"><div class="cal-bf" id="cal-b" style="width:0%"></div></div>
+    </div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:10px" id="cal-hint">Wpisz posiłki — AI przeliczy kalorie</div>
+    <div class="fi-row">
+      <input class="fi" type="text" id="food-inp" placeholder="Opisz posiłek, AI policzy..." onkeydown="if(event.key==='Enter')addFood()"/>
+      <button class="fa" onclick="addFood()">AI +</button>
+    </div>
+    <div class="stxt" id="food-st" style="margin-bottom:6px;text-align:left"></div>
+    <div id="food-list" style="margin-bottom:14px"></div>
+    <div class="sep">Nikotyna — wolność</div>
+    <div class="nic-card">
+      <div class="nic-n" id="nic-n">0</div>
+      <div class="nic-l">dni bez nikotyny</div>
+      <div class="nic-m" id="nic-m">Każda godzina bez nikotyny to inwestycja w siebie.</div>
+      <div class="nic-btns">
+        <button class="nbtn" onclick="startNic()">Zaczynam dziś</button>
+        <button class="nbtn" onclick="resetNic()">Wpadka</button>
+      </div>
+    </div>
+    <div class="sep">Notatki & journal</div>
+    <textarea class="niinp" id="note-inp" placeholder="Myśl, cel, refleksja dnia..."></textarea>
+    <button class="btnf" onclick="saveNote()">Zapisz notatkę</button>
+    <div id="notes-list" style="margin-bottom:32px"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nb active" onclick="sw('today',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Dziś<div class="nb-dot"></div></button>
+  <button class="nb" onclick="sw('routine',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Rutyna<div class="nb-dot"></div></button>
+  <button class="nb" onclick="sw('mentor',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Mentor<div class="nb-dot"></div></button>
+  <button class="nb" onclick="sw('biz',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Agencja<div class="nb-dot"></div></button>
+  <button class="nb" onclick="sw('life',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>Życie<div class="nb-dot"></div></button>
+</div>
+</div>
+
+<script>
+// API handled server-side
+
+
+var state={
+  bodyXP:parseFloat(localStorage.getItem('bodyXP')||0),
+  agencyXP:parseFloat(localStorage.getItem('agencyXP')||0),
+  wrkDone:false,calOk:false,bizDone:false,nnAllDone:false,
+  wrkCount:0,bizT:0,bizA:parseInt(localStorage.getItem('bizAll')||0),
+  cal:0,foods:[],
+  nicS:localStorage.getItem('nicStart')?new Date(localStorage.getItem('nicStart')):null,
+  notes:JSON.parse(localStorage.getItem('notes')||'[]'),
+  plans:JSON.parse(localStorage.getItem('plans')||'[]')
+};
+
+var quotes=[
+  {t:"WE SUFFER MORE IN IMAGINATION THAN IN REALITY.",a:"— Seneca",b:true},
+  {t:"TO BECOME A STAR YOU MUST BURN.",a:"",b:true},
+  {t:"I WAS BORN TO BE GREAT.",a:"",b:true},
+  {t:'"WHAT IF I FALL?" BRO — WHAT IF YOU FLY.',a:"",b:true},
+  {t:"Znoś cierpliwie to, czego zmienić nie możesz. Zmieniaj odważnie to, co możesz.",a:"— Seneka",b:false},
+  {t:"NO ONE IS COMING TO SAVE YOU.",a:"",b:true},
+  {t:"Nie trać czasu na zastanawianie się, jakim człowiekiem być. Po prostu bądź nim.",a:"— Marek Aureliusz",b:false},
+  {t:"STOP WAITING. START DOING.",a:"",b:true},
+  {t:"Nie możesz kontrolować co się wydarzy — tylko jak reagujesz.",a:"— Epiktet",b:false},
+  {t:"YOUR FUTURE SELF IS WATCHING YOU RIGHT NOW.",a:"",b:true},
+  {t:"DISCIPLINE IS THE HIGHEST FORM OF SELF LOVE.",a:"",b:true},
+  {t:"Najpiękniejsza zemsta to nie być podobnym do swoich wrogów.",a:"— Marek Aureliusz",b:false},
+];
+var qi=0;
+function renderQ(){
+  var q=quotes[qi];
+  var el=document.getElementById('q-text');
+  el.textContent=q.t;el.className='qtext'+(q.b?'':' it');
+  document.getElementById('q-author').textContent=q.a;
+  var dots=document.getElementById('q-dots');dots.innerHTML='';
+  quotes.forEach(function(_,i){var d=document.createElement('button');d.className='qdot'+(i===qi?' on':'');d.onclick=function(){qi=i;renderQ();};dots.appendChild(d);});
+}
+renderQ();
+setInterval(function(){qi=(qi+1)%quotes.length;renderQ();},9000);
+
+var today=new Date();
+var days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+var months=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+document.getElementById('today-str').textContent=days[today.getDay()]+', '+today.getDate()+' '+months[today.getMonth()];
+
+function sw(n,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+n).classList.add('active');btn.classList.add('active');
+}
+function saveState(){
+  localStorage.setItem('bodyXP',state.bodyXP);localStorage.setItem('agencyXP',state.agencyXP);
+  localStorage.setItem('bizAll',state.bizA);localStorage.setItem('notes',JSON.stringify(state.notes));
+  localStorage.setItem('plans',JSON.stringify(state.plans));
+  if(state.nicS)localStorage.setItem('nicStart',state.nicS.toISOString());
+}
+
+var moments={
+  morning:[
+    {n:'Wstań od razu',s:'Nie leż — wstanie to pierwsze zwycięstwo dnia'},
+    {n:'Zimna woda na twarz',s:'Reset układu nerwowego, 30 sekund'},
+    {n:'Nie patrz w telefon przez 20 min',s:'Zacznij dzień od siebie, nie od innych'},
+    {n:'Zjedz śniadanie',s:'Daj sobie energię na pierwszą sesję pracy'},
+    {n:'Start Pomodoro przed 10:00',s:'Pierwsza praca rano = wygrany dzień'}
+  ],
+  home:[
+    {n:'Zjedz obiad',s:'Spokojnie, nie przy telefonie'},
+    {n:'Wyjdź z psem — 15 min',s:'Dotlenienie i reset po szkole'},
+    {n:'Prysznic',s:'Mentalny reset przed pracą'},
+    {n:'Start Pomodoro — tylko 25 min',s:'Nie nastawiaj się na cały wieczór. Jeden blok.'}
+  ],
+  weekend:[
+    {n:'Wstań o stałej godzinie',s:'Weekend nie oznacza chaosu — rytm to fundament'},
+    {n:'Kawa przy biurku, nie przy sofie',s:'Miejsce pracy = tryb pracy'},
+    {n:'Telefon twarzą w dół',s:'Instagram nie jest pracą — to złodziej czasu'},
+    {n:'Wpisz jedno zadanie na dziś',s:'Tylko jedno. Rozbij je na kroki poniżej.'},
+    {n:'Start — tylko 25 minut',s:'Weekend to szansa, nie urlop od marzeń'}
+  ]
+};
+var curMoment='morning';
+function setMoment(btn,k){
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');curMoment=k;renderRoutine();
+}
+function renderRoutine(){
+  var steps=moments[curMoment];
+  var el=document.getElementById('routine-steps');el.innerHTML='';
+  steps.forEach(function(s,i){
+    var d=document.createElement('div');d.className='rstep';
+    d.innerHTML='<div class="rnum">0'+(i+1)+'</div><div><div class="rtxt">'+s.n+'</div><div class="rsub">'+s.s+'</div></div>';
+    el.appendChild(d);
+  });
+}
+renderRoutine();
+
+var cdInt=null;
+async function breakdownTask(){
+  var task=document.getElementById('focus-task').value.trim();
+  if(!task||!API_KEY)return;
+  var bd=document.getElementById('breakdown');
+  var bs=document.getElementById('breakdown-steps');
+  bs.innerHTML='<div style="font-size:12px;color:var(--txt2);font-style:italic;padding:4px 0">AI rozbija zadanie...</div>';
+  bd.classList.add('on');
+  try{
+    var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Coach produktywności. Rozbij zadanie na 3-4 konkretne mikrokroki (każdy max 10 słów, po polsku). TYLKO JSON: {"steps":["krok1","krok2","krok3"]}. Zero innego tekstu.',messages:[{role:'user',content:'Zadanie: '+task}],max_tokens:500})});
+    var d=await r.json();
+    var p=JSON.parse(d.text.replace(/```json|```/g,'').trim());
+    bs.innerHTML='';
+    p.steps.forEach(function(s){
+      var div=document.createElement('div');div.className='ts';
+      div.innerHTML='<div class="tdot"></div><div class="ttxt">'+s+'</div>';
+      bs.appendChild(div);
+    });
+    startCD();
+  }catch(e){bs.innerHTML='<div style="font-size:12px;color:var(--txt2);padding:4px 0">Błąd — sprawdź klucz API.</div>';}
+}
+function startCD(){
+  var cw=document.getElementById('cdwrap');cw.classList.add('on');
+  var left=300;
+  var msgs=['Przygotuj się. Za 5 minut nie ma już wymówek.','Kawa gotowa? Biurko wolne? Zaraz start.','Ostatnie 2 minuty — telefon odłóż.','Zaraz zaczynasz. Wiesz co robić.'];
+  if(cdInt)clearInterval(cdInt);
+  cdInt=setInterval(function(){
+    left--;
+    var m=Math.floor(left/60),s=left%60;
+    document.getElementById('cd-num').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    document.getElementById('cd-msg').textContent=msgs[Math.min(Math.floor((300-left)/80),msgs.length-1)];
+    if(left<=0){clearInterval(cdInt);skipCD();}
+  },1000);
+}
+function skipCD(){
+  clearInterval(cdInt);
+  document.getElementById('cdwrap').classList.remove('on');
+  if(!tRun)toggleTimer();
+}
+
+var tLeft=1500,tRun=false,tInt=null;
+function toggleTimer(){
+  if(tRun){clearInterval(tInt);tRun=false;document.getElementById('r-btn').textContent='Kontynuuj';}
+  else{
+    tRun=true;document.getElementById('r-btn').textContent='Pauza';
+    tInt=setInterval(function(){
+      tLeft--;
+      var m=Math.floor(tLeft/60),s=tLeft%60;
+      document.getElementById('r-timer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+      document.getElementById('t-bar').style.width=((1500-tLeft)/1500*100)+'%';
+      if(tLeft<=0){clearInterval(tInt);tRun=false;document.getElementById('r-btn').textContent='Start';document.getElementById('r-timer').textContent='Gotowe ✓';}
+    },1000);
+  }
+}
+function resetTimer(){clearInterval(tInt);tRun=false;tLeft=1500;document.getElementById('r-timer').textContent='25:00';document.getElementById('r-btn').textContent='Start';document.getElementById('t-bar').style.width='0%';}
+
+function animXP(pctId,barId,gainId,val){
+  var p=document.getElementById(pctId);if(!p)return;
+  p.textContent=val.toFixed(1)+'%';p.classList.remove('pop');void p.offsetWidth;p.classList.add('pop');
+  document.getElementById(barId).style.width=Math.min(val,100)+'%';
+  if(gainId&&val>0){var g=document.getElementById(gainId);if(g){g.textContent='+'+val.toFixed(1)+'%';g.classList.add('show');}}
+}
+function updateXP(){animXP('body-pct','body-bar','body-gain',state.bodyXP);animXP('agency-pct','agency-bar','agency-gain',state.agencyXP);}
+function gainBody(v){state.bodyXP=parseFloat((state.bodyXP+v).toFixed(1));saveState();updateXP();}
+function gainAgency(v){state.agencyXP=parseFloat((state.agencyXP+v).toFixed(1));saveState();updateXP();}
+
+var nnD={};
+function toggleNN(el,k){
+  var done=el.classList.contains('done');
+  if(done){el.classList.remove('done');el.querySelector('.chk').innerHTML='';delete nnD[k];}
+  else{el.classList.add('done');el.querySelector('.chk').innerHTML='✓';nnD[k]=1;}
+  var c=Object.keys(nnD).length;
+  document.getElementById('nn-lbl').textContent=c+' z 5 ukończonych';
+  var p=c/5*100;
+  document.getElementById('nn-bar').style.width=p+'%';document.getElementById('h-nn').textContent=c+'/5';
+  document.getElementById('h-nn-bar').style.width=p+'%';
+  var was=state.nnAllDone;state.nnAllDone=(c===5);
+  if(state.nnAllDone&&!was){gainBody(0.2);gainAgency(0.3);}
+}
+function toggleWrk(el){
+  var done=el.classList.contains('done');var cc=el.querySelector('.wchk');
+  if(done){el.classList.remove('done');cc.innerHTML='';state.wrkCount=Math.max(0,state.wrkCount-1);}
+  else{el.classList.add('done');cc.innerHTML='✓';state.wrkCount++;}
+  var total=document.querySelectorAll('#w-list .witem').length;
+  var was=state.wrkDone;state.wrkDone=(state.wrkCount>=total);
+  if(state.wrkDone&&!was){gainBody(0.3);gainAgency(0.2);}updateXP();
+}
+
+function savePlan(){
+  var date=document.getElementById('plan-date').value.trim();
+  var text=document.getElementById('plan-inp').value.trim();if(!text)return;
+  state.plans.unshift({date:date||'Brak daty',text:text});
+  document.getElementById('plan-date').value='';document.getElementById('plan-inp').value='';
+  saveState();renderPlans();
+}
+function renderPlans(){
+  var l=document.getElementById('plan-entries');l.innerHTML='';
+  state.plans.slice(0,8).forEach(function(p){
+    var d=document.createElement('div');d.className='pentry';
+    d.innerHTML='<div class="pentry-date">'+p.date+'</div><div class="pentry-txt">'+p.text+'</div>';
+    l.appendChild(d);
+  });
+}
+
+function startNic(){state.nicS=new Date();saveState();updNic();}
+function resetNic(){state.nicS=null;localStorage.removeItem('nicStart');document.getElementById('nic-n').textContent='0';document.getElementById('nic-m').textContent='Wpadki się zdarzają. Zacznij od nowa — teraz.';}
+function updNic(){
+  if(!state.nicS)return;
+  var d=Math.floor((new Date()-state.nicS)/86400000);
+  document.getElementById('nic-n').textContent=d;document.getElementById('h-nic').textContent=d;
+  var msgs=['Dzień 1 — najtrudniejszy. Twój mózg się regeneruje.',''+d+' dni. Skupienie rośnie.',''+d+' dni czysty. Więcej niż większość.',''+d+' dni. Ciało Ci dziękuje.'];
+  document.getElementById('nic-m').textContent=msgs[Math.min(d,msgs.length-1)];
+}
+
+function updCal(){
+  var c=state.cal;
+  document.getElementById('cal-e').textContent=c;document.getElementById('cal-r').textContent=Math.max(0,2000-c);
+  var p=Math.min(100,Math.round(c/2000*100));document.getElementById('cal-b').style.width=p+'%';
+  var was=state.calOk;
+  if(c>=1500&&c<=2000){state.calOk=true;if(!was)gainBody(0.2);document.getElementById('cal-hint').textContent='Kalorie w normie — sylwetka rośnie (+0.2%)';}
+  else if(c<1500&&c>0){state.calOk=false;document.getElementById('cal-hint').textContent='Za mało kalorii — jedz więcej';}
+  else if(c>2000){state.calOk=false;document.getElementById('cal-hint').textContent='Przekroczono cel — jutro korekta';}
+  else{document.getElementById('cal-hint').textContent='Wpisz posiłki — AI przeliczy kalorie';}
+}
+function renderFoods(){
+  var l=document.getElementById('food-list');l.innerHTML='';
+  state.foods.forEach(function(f,i){
+    var d=document.createElement('div');d.className='food-item';
+    d.innerHTML='<div><div style="font-size:13px;font-weight:500;color:var(--txt)">'+f.name+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--txt2)">'+f.cal+' kcal</span><button class="fdel" onclick="removeFood('+i+')">×</button></div>';
+    l.appendChild(d);
+  });
+}
+function removeFood(i){state.cal-=state.foods[i].cal;state.foods.splice(i,1);renderFoods();updCal();}
+async function callAPI(sys,usr){
+  var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,messages:[{role:'user',content:usr}],max_tokens:1000})});
+  var d=await r.json();if(d.error)throw new Error(d.error);return d.text;
+}
+async function addFood(){
+  var inp=document.getElementById('food-inp');var desc=inp.value.trim();if(!desc)return;
+  inp.value='';var st=document.getElementById('food-st');st.textContent='AI szacuje...';
+  try{
+    var txt=await callAPI('Ekspert żywienia. TYLKO JSON: {"name":"nazwa po polsku","cal":liczba}. Zero innego tekstu.','Posiłek: '+desc);
+    var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    state.foods.push({name:p.name,cal:parseInt(p.cal)});state.cal+=parseInt(p.cal);
+    renderFoods();updCal();st.textContent='Dodano: '+p.name+' — '+p.cal+' kcal';
+    setTimeout(function(){st.textContent='';},3000);
+  }catch(e){st.textContent='Błąd — sprawdź klucz API.';}
+}
+function renderNotes(){
+  var l=document.getElementById('notes-list');l.innerHTML='';
+  state.notes.slice(0,10).forEach(function(n){
+    var d=document.createElement('div');d.className='nitem';
+    d.innerHTML='<div class="ndate">'+n.date+'</div><div class="ntxt">'+n.text+'</div>';l.appendChild(d);
+  });
+}
+function saveNote(){
+  var inp=document.getElementById('note-inp');var txt=inp.value.trim();if(!txt)return;
+  var now=new Date();var ds=now.toLocaleDateString('pl-PL',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  state.notes.unshift({date:ds,text:txt});inp.value='';saveState();renderNotes();
+}
+var mH=[];
+async function sendMentor(){
+  var inp=document.getElementById('mentor-inp');var txt=inp.value.trim();if(!txt)return;
+  inp.value='';var msgs=document.getElementById('mentor-msgs');
+  var u=document.createElement('div');u.className='msg user';u.textContent=txt;msgs.appendChild(u);
+  var a=document.createElement('div');a.className='msg ai';a.textContent='...';a.style.animation='pulse 1.2s infinite';msgs.appendChild(a);
+  msgs.scrollTop=msgs.scrollHeight;mH.push({role:'user',content:txt});
+  try{
+    var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Jesteś mentalnym mentorem biznesowym dla 16-letniego Aleksandra z Polski. Buduje agencję AI (AI callers, Meta Ads, kliniki fizjo). Sprzedaje przez axario.pl i Useme. Łatwo się zniechęca gdy wyniki nie są natychmiastowe. Mów po polsku. Bądź bezpośredni — krótko, mocno, konkretnie jak Marek Aureliusz. Max 3 zdania. Daj jeden konkretny następny krok.',messages:mH,max_tokens:1000})});
+    var d=await r.json();var reply=d.text;
+    mH.push({role:'assistant',content:reply});
+    a.style.animation='';a.textContent=reply;msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){a.style.animation='';a.textContent='Błąd — sprawdź klucz API.';}
+}
+function addContact(){
+  state.bizT++;state.bizA++;
+  document.getElementById('biz-t').textContent=state.bizT;document.getElementById('biz-a').textContent=state.bizA;
+  document.getElementById('biz-bar').style.width=Math.min(100,state.bizT/5*100)+'%';
+  var was=state.bizDone;state.bizDone=(state.bizT>=5);if(state.bizDone&&!was)gainAgency(0.5);saveState();
+  var tips=['Jeden. Kontynuuj.','Dwa. Momentum rośnie.','Trzy z pięciu.','Cztery. Jeszcze jedna.','5/5 — +0.5% agencji!'];
+  document.getElementById('biz-tip').textContent=tips[Math.min(state.bizT-1,tips.length-1)];
+}
+async function genWorkout(){
+  var st=document.getElementById('w-status');st.textContent='AI generuje plan...';
+  try{
+    var txt=await callAPI('Trener personalny. TYLKO JSON: {"exercises":[{"name":"nazwa po polsku","detail":"seria x powt"}]}. 5 ćwiczeń TYLKO z: rowerek stacjonarny, hantle do 7kg, roller do pleców, pompki, przysiady, plank. Zero siłowni.','Plan treningowy na dziś.');
+    var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    var l=document.getElementById('w-list');l.innerHTML='';state.wrkCount=0;state.wrkDone=false;
+    p.exercises.forEach(function(ex){
+      var div=document.createElement('div');div.className='witem';div.onclick=function(){toggleWrk(div);};
+      div.innerHTML='<div class="wchk"></div><div><div class="wname">'+ex.name+'</div><div class="wdet">'+ex.detail+'</div></div>';
+      l.appendChild(div);
+    });
+    st.textContent='Plan wygenerowany.';setTimeout(function(){st.textContent='';},2000);updateXP();
+  }catch(e){st.textContent='Błąd generowania.';}
+}
+document.getElementById('biz-a').textContent=state.bizA;
+renderNotes();renderPlans();updNic();updateXP();
+</script>
+</body>
+</html>
