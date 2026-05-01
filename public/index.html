@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Alexander OS">
+<title>Alexander OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0C0C0E;
+  --bg2:#141416;
+  --card:#1A1A1E;
+  --card2:#222228;
+  --brd:#2A2A32;
+  --brd2:#363640;
+  --txt:#FFFFFF;
+  --txt2:#666672;
+  --txt3:#444450;
+  --accent:#D4FF00;
+  --accent2:rgba(212,255,0,.12);
+  --accent3:rgba(212,255,0,.06);
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Barlow',sans-serif;overflow:hidden}
+.app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:fadein .25s ease}
+.screen.active{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══ NAV — LARGE BUTTONS ═══ */
+.nav{display:flex;background:var(--bg2);border-top:1px solid var(--brd);flex-shrink:0;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));gap:4px}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px 4px;border:none;background:transparent;cursor:pointer;border-radius:12px;transition:all .2s;min-height:60px}
+.nb.active{background:var(--accent);color:var(--bg)}
+.nb svg{flex-shrink:0;transition:all .2s}
+.nb.active svg{stroke:var(--bg)}
+.nb-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);transition:color .2s}
+.nb.active .nb-lbl{color:var(--bg)}
+
+/* ═══ SHARED ═══ */
+.pad{padding:16px 16px 0}
+.sep{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt2);margin-bottom:10px;margin-top:2px}
+.divider{height:1px;background:var(--brd);margin:0 16px 14px}
+
+/* ═══ QUOTE STRIP ═══ */
+.quote-strip{padding:20px 16px 16px;border-bottom:1px solid var(--brd)}
+.quote-tag{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px}
+.quote-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.35;color:var(--txt);margin-bottom:6px}
+.quote-text.big{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1.1;letter-spacing:.02em}
+.quote-author{font-size:12px;color:var(--txt2);letter-spacing:.04em}
+.quote-dots{display:flex;gap:5px;margin-top:10px}
+.qdot{width:4px;height:4px;border-radius:50%;background:var(--brd2);cursor:pointer;border:none;padding:0;transition:background .2s;flex-shrink:0}
+.qdot.on{background:var(--accent)}
+
+/* ═══ DATE HEADER ═══ */
+.date-header{padding:16px 16px 0}
+.date-day{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt2)}
+.date-full{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.02em;color:var(--txt);line-height:1}
+
+/* ═══ STAT ROW ═══ */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--card);border-radius:14px;padding:14px 15px;position:relative;overflow:hidden}
+.stat-val{font-family:'DM Serif Display',serif;font-size:28px;color:var(--txt);line-height:1}
+.stat-val.accent{color:var(--accent)}
+.stat-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);margin-top:4px}
+.stat-bar{position:absolute;bottom:0;left:0;height:2px;background:var(--accent);border-radius:0 2px 0 0;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* ═══ NN LIST ═══ */
+.nn-list{display:flex;flex-direction:column;gap:6px;padding:0 16px;margin-bottom:14px}
+.nn{display:flex;align-items:center;gap:13px;padding:14px 15px;background:var(--card);border-radius:14px;cursor:pointer;transition:all .2s;-webkit-user-select:none;user-select:none;animation:slideup .3s ease both}
+.nn:active{transform:scale(.98);background:var(--card2)}
+.nn.done{background:var(--accent2);border:1px solid rgba(212,255,0,.2)}
+.nn-chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--brd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:11px;font-weight:700}
+.nn.done .nn-chk{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.nn-body{flex:1}
+.nn-name{font-size:14px;font-weight:600;color:var(--txt);transition:all .2s}
+.nn.done .nn-name{color:var(--txt2);text-decoration:line-through}
+.nn-sub{font-size:11px;color:var(--txt2);margin-top:2px}
+.pill{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.pm{background:rgba(255,80,80,.12);color:#FF8080;border:1px solid rgba(255,80,80,.2)}
+.pb{background:var(--accent3);color:var(--accent);border:1px solid rgba(212,255,0,.15)}
+.ph{background:rgba(80,160,255,.1);color:#80B4FF;border:1px solid rgba(80,160,255,.2)}
+
+.prog-wrap{padding:0 16px 20px}
+.prog-bar-bg{background:var(--card);border-radius:3px;height:3px;overflow:hidden;margin:6px 0 4px}
+.prog-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.prog-label{font-size:11px;color:var(--txt2)}
+
+/* ═══ MOMENT TABS ═══ */
+.mtabs{display:flex;gap:6px;padding:0 16px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.mtabs::-webkit-scrollbar{display:none}
+.mtab{padding:8px 16px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--brd);background:transparent;color:var(--txt2);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.mtab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* ═══ ROUTINE CARD ═══ */
+.routine-card{margin:0 16px 14px;background:var(--card);border-radius:16px;overflow:hidden}
+.rstep{display:flex;align-items:flex-start;gap:13px;padding:13px 16px;border-bottom:1px solid var(--brd)}
+.rstep:last-child{border-bottom:none}
+.rnum{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent);flex-shrink:0;width:20px;margin-top:1px;line-height:1}
+.rtxt{font-size:14px;font-weight:600;color:var(--txt);line-height:1.3}
+.rsub{font-size:11px;color:var(--txt2);margin-top:3px;line-height:1.4}
+
+/* ═══ FOCUS SYSTEM ═══ */
+.focus-card{margin:0 16px 12px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--brd)}
+.focus-top{padding:14px 16px;border-bottom:1px solid var(--brd)}
+.focus-title{font-size:14px;font-weight:700;color:var(--txt)}
+.focus-sub{font-size:11px;color:var(--txt2);margin-top:3px}
+.focus-inp{width:100%;background:var(--card2);border:none;border-bottom:1px solid var(--brd);padding:13px 16px;color:var(--txt);font-size:14px;outline:none;font-family:'Barlow',sans-serif;font-weight:500}
+.focus-inp::placeholder{color:var(--txt3)}
+.ritual-steps{padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.fstep{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--bg2);font-size:13px;color:var(--txt2)}
+.fstep.active{background:var(--accent3);color:var(--txt);border:1px solid rgba(212,255,0,.15)}
+.breakdown-card{margin:0 16px 12px;padding:14px 16px;border-radius:14px;background:var(--accent3);border:1px solid rgba(212,255,0,.15);display:none}
+.breakdown-card.on{display:block;animation:fadein .3s ease}
+.breakdown-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.bstep{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(212,255,0,.08)}
+.bstep:last-child{border-bottom:none}
+.bdot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.btxt{font-size:13px;color:var(--txt);line-height:1.45}
+.commit-btn{width:calc(100% - 32px);margin:0 16px 12px;padding:14px;background:var(--accent);color:var(--bg);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+.commit-btn:active{opacity:.8}
+
+/* ═══ COUNTDOWN ═══ */
+.cd-card{margin:0 16px 12px;background:var(--card);border-radius:16px;padding:20px;text-align:center;display:none;border:1px solid var(--brd)}
+.cd-card.on{display:block;animation:fadein .3s ease}
+.cd-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--accent);line-height:1;margin-bottom:6px}
+.cd-msg{font-size:12px;color:var(--txt2);line-height:1.5;margin-bottom:14px}
+.cd-skip{width:100%;padding:12px;background:var(--bg2);color:var(--txt);border:1px solid var(--brd);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+
+/* ═══ TIMER ═══ */
+.timer-card{margin:0 16px 14px;background:var(--card);border-radius:16px;padding:22px 20px;text-align:center;border:1px solid var(--brd)}
+.timer-num{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--txt);line-height:1;letter-spacing:.02em}
+.timer-sub{font-size:12px;color:var(--txt2);margin-top:6px;margin-bottom:18px;line-height:1.5}
+.timer-btns{display:flex;gap:8px}
+.tbtn{flex:1;padding:13px;border-radius:11px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--brd);background:var(--bg2);color:var(--txt);transition:all .2s}
+.tbtn:active{opacity:.7}
+.tbtn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.tprog-bg{background:var(--bg2);border-radius:3px;height:3px;margin-top:16px;overflow:hidden}
+.tprog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s}
+
+/* ═══ PLAN ═══ */
+.plan-card{margin:0 16px 14px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--brd)}
+.plan-top{padding:14px 16px;border-bottom:1px solid var(--brd)}
+.plan-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.plan-desc{font-size:12px;color:var(--txt2)}
+.plan-fi{width:100%;padding:12px 16px;background:transparent;border:none;border-bottom:1px solid var(--brd);color:var(--txt);font-size:13px;outline:none;font-family:'Barlow',sans-serif}
+.plan-fi::placeholder{color:var(--txt3)}
+textarea.plan-fi{min-height:65px;resize:none;line-height:1.5}
+.plan-save{width:100%;padding:13px;background:var(--bg2);color:var(--accent);border:none;border-top:1px solid var(--brd);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.plan-save:active{background:var(--card2)}
+.plan-entries{display:flex;flex-direction:column;gap:6px;padding:0 16px;margin-bottom:14px}
+.pentry{background:var(--card);border-radius:12px;padding:12px 14px;animation:slideup .3s ease;border:1px solid var(--brd)}
+.pentry-date{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.pentry-txt{font-size:13px;color:var(--txt);line-height:1.55}
+
+/* ═══ CHAT ═══ */
+.chat-msgs{padding:0 16px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:140px;margin-bottom:8px}
+.msg{padding:12px 15px;border-radius:16px;font-size:13px;line-height:1.55;animation:fadein .3s ease;max-width:88%;font-weight:500}
+.msg.ai{background:var(--card);color:var(--txt);border-bottom-left-radius:4px;align-self:flex-start;border:1px solid var(--brd)}
+.msg.user{background:var(--accent);color:var(--bg);border-bottom-right-radius:4px;align-self:flex-end;font-weight:600}
+.chat-row{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--brd);background:var(--bg2)}
+.chat-inp{flex:1;padding:11px 14px;border:1px solid var(--brd);border-radius:22px;background:var(--card);color:var(--txt);font-size:13px;outline:none;font-family:'Barlow',sans-serif}
+.chat-inp::placeholder{color:var(--txt3)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:var(--bg);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.chat-send:active{opacity:.7}
+
+/* ═══ BIZ ═══ */
+.biz-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.biz-stat{background:var(--card);border-radius:14px;padding:14px;text-align:center;border:1px solid var(--brd)}
+.biz-val{font-family:'DM Serif Display',serif;font-size:30px;color:var(--accent)}
+.biz-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);margin-top:3px}
+.biz-btn{width:100%;padding:14px;background:var(--accent);color:var(--bg);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-bottom:8px;transition:opacity .2s}
+.biz-btn:active{opacity:.8}
+.biz-tip{font-size:11px;color:var(--txt2);text-align:center;margin-bottom:14px;min-height:16px}
+
+/* ═══ XP ═══ */
+.xp-card{background:var(--card);border-radius:16px;padding:15px 16px;margin-bottom:10px;border:1px solid var(--brd)}
+.xp-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.xp-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt2);margin-bottom:3px}
+.xp-pct{font-family:'DM Serif Display',serif;font-size:26px;color:var(--accent);transition:all .3s}
+.xp-pct.pop{animation:pop .4s ease}
+.xp-gain{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--accent);opacity:0;transition:opacity .4s;display:block;margin-top:2px}
+.xp-gain.show{opacity:1}
+.xp-bg{background:var(--bg2);border-radius:3px;height:4px;overflow:hidden;margin-bottom:7px}
+.xp-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .7s cubic-bezier(.4,0,.2,1)}
+.xp-sub{font-size:11px;color:var(--txt2);line-height:1.5}
+
+/* ═══ WORKOUT ═══ */
+.wrk-item{display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--card);border-radius:14px;cursor:pointer;transition:all .2s;margin-bottom:6px;border:1px solid var(--brd)}
+.wrk-item:active{transform:scale(.98)}
+.wrk-item.done{background:var(--accent2);border-color:rgba(212,255,0,.2)}
+.wchk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--brd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:11px;font-weight:700;color:var(--bg)}
+.wrk-item.done .wchk{background:var(--accent);border-color:var(--accent)}
+.wname{font-size:14px;font-weight:600;color:var(--txt);flex:1}
+.wdet{font-size:11px;color:var(--txt2);margin-top:2px}
+.gen-btn{width:100%;padding:13px;background:var(--bg2);color:var(--accent);border:1px solid var(--brd);border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-bottom:6px}
+.gen-btn:active{opacity:.7}
+
+/* ═══ CALORIES ═══ */
+.cal-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--brd)}
+.cal-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.cal-num{font-family:'DM Serif Display',serif;font-size:36px;color:var(--txt);line-height:1}
+.cal-unit{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);margin-top:4px}
+.cal-right{text-align:right}
+.cal-rem{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)}
+.cal-rem-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-top:3px}
+.cal-bg{background:var(--bg2);border-radius:4px;height:5px;overflow:hidden}
+.cal-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.fi-row{display:flex;gap:8px;margin-bottom:8px}
+.fi{flex:1;padding:11px 14px;border:1px solid var(--brd);border-radius:12px;background:var(--card2);color:var(--txt);font-size:13px;outline:none;font-family:'Barlow',sans-serif}
+.fi::placeholder{color:var(--txt3)}
+.fa{padding:11px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer}
+.fa:active{opacity:.8}
+.food-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--brd);border-radius:12px;margin-bottom:6px;background:var(--card);animation:slideup .3s ease}
+.food-name{font-size:13px;font-weight:500;color:var(--txt)}
+.food-cal{font-size:13px;color:var(--txt2)}
+.fdel{background:none;border:none;color:var(--txt2);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+
+/* ═══ NICOTINE ═══ */
+.nic-card{background:var(--card);border-radius:16px;padding:22px 20px;margin-bottom:14px;text-align:center;border:1px solid var(--brd)}
+.nic-num{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--accent);line-height:1}
+.nic-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--txt2);margin-top:4px}
+.nic-msg{font-size:13px;color:var(--txt2);margin:12px 0 18px;line-height:1.6}
+.nic-btns{display:flex;gap:8px}
+.nib{flex:1;padding:12px;border-radius:11px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid var(--brd);background:var(--bg2);color:var(--txt);transition:all .2s}
+.nib:active{opacity:.7}
+.nib.p{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* ═══ NOTES ═══ */
+.note-inp{width:100%;padding:13px 15px;border:1px solid var(--brd);border-radius:12px;background:var(--card);color:var(--txt);font-size:13px;margin-bottom:8px;font-family:'Barlow',sans-serif;outline:none;min-height:75px;resize:none;line-height:1.5}
+.note-inp::placeholder{color:var(--txt3)}
+.note-save{width:100%;padding:13px;background:var(--bg2);color:var(--txt);border:1px solid var(--brd);border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-bottom:12px}
+.note-save:active{opacity:.7}
+.note-item{padding:12px 14px;border:1px solid var(--brd);border-radius:12px;margin-bottom:7px;background:var(--card);animation:slideup .3s ease}
+.note-date{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);margin-bottom:5px}
+.note-txt{font-size:13px;color:var(--txt);line-height:1.55}
+.stxt{font-size:11px;color:var(--txt2);font-style:italic;text-align:center;min-height:16px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════ DZIŚ ═══════ -->
+<div id="s-today" class="screen active">
+  <div class="quote-strip">
+    <div class="quote-tag">Cytat dnia</div>
+    <div class="quote-text big" id="q-text">WE SUFFER MORE IN IMAGINATION THAN IN REALITY.</div>
+    <div class="quote-author" id="q-author">— Seneca</div>
+    <div class="quote-dots" id="q-dots"></div>
+  </div>
+  <div class="date-header">
+    <div class="date-day" id="today-day">Sobota</div>
+    <div class="date-full" id="today-date">3 Maja</div>
+  </div>
+  <div class="pad">
+    <div class="sep" style="margin-top:14px">Przegląd</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-val accent" id="h-nn">0/5</div>
+        <div class="stat-lbl">Non-Neg.</div>
+        <div class="stat-bar" id="h-nn-bar" style="width:0%"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val accent" id="h-nic">0</div>
+        <div class="stat-lbl">Dni bez nikotyny</div>
+        <div class="stat-bar" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="sep">Non-negotiables</div>
+  </div>
+  <div class="nn-list" id="nn-list">
+    <div class="nn" onclick="toggleNN(this,'read')" style="animation-delay:.05s">
+      <div class="nn-chk"></div>
+      <div class="nn-body"><div class="nn-name">30 stron czytania</div><div class="nn-sub">Każdego dnia, bez wyjątku</div></div>
+      <span class="pill pm">Must</span>
+    </div>
+    <div class="nn" onclick="toggleNN(this,'journal')" style="animation-delay:.1s">
+      <div class="nn-chk"></div>
+      <div class="nn-body"><div class="nn-name">Journal dnia</div><div class="nn-sub">Refleksja przed snem</div></div>
+      <span class="pill pm">Must</span>
+    </div>
+    <div class="nn" onclick="toggleNN(this,'nic')" style="animation-delay:.15s">
+      <div class="nn-chk"></div>
+      <div class="nn-body"><div class="nn-name">Zero nikotyny</div><div class="nn-sub">Mózg, kasa, wizerunek</div></div>
+      <span class="pill ph">Zdrowie</span>
+    </div>
+    <div class="nn" onclick="toggleNN(this,'cli')" style="animation-delay:.2s">
+      <div class="nn-chk"></div>
+      <div class="nn-body"><div class="nn-name">5 wiadomości do klientów</div><div class="nn-sub">Useme / axario.pl</div></div>
+      <span class="pill pb">Biznes</span>
+    </div>
+    <div class="nn" onclick="toggleNN(this,'wrk')" style="animation-delay:.25s">
+      <div class="nn-chk"></div>
+      <div class="nn-body"><div class="nn-name">Trening dziś</div><div class="nn-sub">Rower, hantle, roller</div></div>
+      <span class="pill ph">Zdrowie</span>
+    </div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-bar-bg"><div class="prog-bar-fill" id="nn-bar" style="width:0%"></div></div>
+    <div class="prog-label" id="nn-lbl">0 z 5 ukończonych</div>
+  </div>
+</div>
+
+<!-- ═══════ FOCUS ═══════ -->
+<div id="s-focus" class="screen">
+  <div class="quote-strip">
+    <div class="quote-tag">Rutyna & Focus</div>
+    <div class="quote-text it" style="font-family:'DM Serif Display',serif;font-style:italic;font-size:18px">The secret of getting ahead is getting started.</div>
+    <div class="quote-author">— Mark Twain</div>
+  </div>
+  <div class="pad"><div class="sep" style="margin-top:14px">Moment</div></div>
+  <div class="mtabs">
+    <button class="mtab active" onclick="setMoment(this,'morning')">🌅 Rano</button>
+    <button class="mtab" onclick="setMoment(this,'home')">🏠 Powrót</button>
+    <button class="mtab" onclick="setMoment(this,'weekend')">☕ Weekend</button>
+  </div>
+  <div class="routine-card" id="routine-steps"></div>
+
+  <div class="pad" style="margin-top:12px"><div class="sep">System focus</div></div>
+  <div class="focus-card">
+    <div class="focus-top"><div class="focus-title">Co chcesz dziś zrobić?</div><div class="focus-sub">AI rozbije to na mikrokroki → odliczanie → start</div></div>
+    <input class="focus-inp" type="text" id="focus-task" placeholder="np. napisać ofertę dla kliniki fizjo..." onkeydown="if(event.key==='Enter')breakdownTask()"/>
+    <div class="ritual-steps">
+      <div class="fstep">☕ Kawa lub woda</div>
+      <div class="fstep">💺 Biurko — telefon odwrócony</div>
+      <div class="fstep">🎵 Lo-fi lub biały szum</div>
+      <div class="fstep active">⚡ Wpisz zadanie wyżej i kliknij →</div>
+    </div>
+  </div>
+  <button class="commit-btn" onclick="breakdownTask()">Rozbij na kroki →</button>
+
+  <div class="breakdown-card" id="breakdown">
+    <div class="breakdown-lbl">Twój plan na teraz</div>
+    <div id="breakdown-steps"></div>
+  </div>
+  <div class="cd-card" id="cdcard">
+    <div class="cd-lbl">Zaczynasz za</div>
+    <div class="cd-num" id="cd-num">5:00</div>
+    <div class="cd-msg" id="cd-msg">Przygotuj się. Za 5 minut nie ma już wymówek.</div>
+    <button class="cd-skip" onclick="skipCD()">Zacznij teraz →</button>
+  </div>
+
+  <div class="pad"><div class="sep">Pomodoro</div></div>
+  <div class="timer-card">
+    <div class="timer-num" id="r-timer">25:00</div>
+    <div class="timer-sub">Jeden blok. Nie cały wieczór.</div>
+    <div class="timer-btns">
+      <button class="tbtn primary" id="r-btn" onclick="toggleTimer()">Start</button>
+      <button class="tbtn" onclick="resetTimer()">Reset</button>
+    </div>
+    <div class="tprog-bg"><div class="tprog-fill" id="t-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="pad"><div class="sep">Plan na jutro</div></div>
+  <div class="plan-card">
+    <div class="plan-top"><div class="plan-lbl">Zapisz plan</div><div class="plan-desc">Co zrobisz jutro?</div></div>
+    <input type="text" class="plan-fi" id="plan-date" placeholder="Data (np. niedziela 4 maja)"/>
+    <textarea class="plan-fi" id="plan-inp" placeholder="Treningi, praca, spotkania..."></textarea>
+    <button class="plan-save" onclick="savePlan()">Zapisz →</button>
+  </div>
+  <div class="plan-entries" id="plan-entries"></div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ═══════ MENTOR ═══════ -->
+<div id="s-mentor" class="screen">
+  <div class="quote-strip">
+    <div class="quote-tag">Mentor AI</div>
+    <div class="quote-text big">NO ONE IS COMING TO SAVE YOU.</div>
+    <div class="quote-author">— mantra</div>
+  </div>
+  <div class="pad"><div class="sep" style="margin-top:14px">Napisz co blokuje</div></div>
+  <div class="chat-msgs" id="mentor-msgs">
+    <div class="msg ai">Cześć Alexander. Wiem że budowanie agencji AI bywa frustrujące — wyniki nie przychodzą w tydzień. Nad czym dziś pracujesz?</div>
+  </div>
+  <div class="chat-row">
+    <input class="chat-inp" type="text" id="mentor-inp" placeholder="Co Cię blokuje?" onkeydown="if(event.key==='Enter')sendMentor()"/>
+    <button class="chat-send" onclick="sendMentor()">↑</button>
+  </div>
+</div>
+
+<!-- ═══════ PROGRES ═══════ -->
+<div id="s-progress" class="screen">
+  <div class="quote-strip">
+    <div class="quote-tag">Twój progres</div>
+    <div class="quote-text big">TO BECOME A STAR YOU MUST BURN.</div>
+  </div>
+  <div class="pad" style="padding-bottom:0">
+    <div class="sep" style="margin-top:14px">Outreach tracker</div>
+    <div class="biz-stats">
+      <div class="biz-stat"><div class="biz-val" id="biz-t">0</div><div class="biz-lbl">Dziś</div></div>
+      <div class="biz-stat"><div class="biz-val" id="biz-a">0</div><div class="biz-lbl">Łącznie</div></div>
+    </div>
+    <div class="prog-bar-bg" style="margin-bottom:12px"><div class="prog-bar-fill" id="biz-bar" style="width:0%"></div></div>
+    <button class="biz-btn" onclick="addContact()">+ Wysłałem wiadomość do klienta</button>
+    <div class="biz-tip" id="biz-tip">Cel: 5 wiadomości dziennie.</div>
+    <div class="sep">AI Agency</div>
+    <div class="xp-card">
+      <div class="xp-top">
+        <div><div class="xp-title">Budowanie agencji</div><div class="xp-sub">Outreach + zadania codzienne</div></div>
+        <div style="text-align:right"><div class="xp-pct" id="agency-pct">0.0%</div><span class="xp-gain" id="agency-gain"></span></div>
+      </div>
+      <div class="xp-bg"><div class="xp-fill" id="agency-bar" style="width:0%"></div></div>
+      <div class="xp-sub">+0.5% za 5 klientów · +0.3% za NN 5/5 · +0.2% za trening</div>
+    </div>
+    <div class="sep">Sylwetka</div>
+    <div class="xp-card" style="margin-bottom:20px">
+      <div class="xp-top">
+        <div><div class="xp-title">Budowanie sylwetki</div><div class="xp-sub">Trening + kalorie + konsekwencja</div></div>
+        <div style="text-align:right"><div class="xp-pct" id="body-pct">0.0%</div><span class="xp-gain" id="body-gain"></span></div>
+      </div>
+      <div class="xp-bg"><div class="xp-fill" id="body-bar" style="width:0%"></div></div>
+      <div class="xp-sub">+0.3% trening · +0.2% kalorie 1500-2000 · +0.2% NN 5/5</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ŻYCIE ═══════ -->
+<div id="s-life" class="screen">
+  <div class="quote-strip">
+    <div class="quote-tag">Życie</div>
+    <div class="quote-text it" style="font-family:'DM Serif Display',serif;font-style:italic;font-size:20px">I was born to be great.</div>
+  </div>
+  <div class="pad" style="padding-top:16px">
+    <div class="sep">Trening dziś</div>
+    <div id="w-list" style="margin-bottom:8px">
+      <div class="wrk-item" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Rowerek — cardio</div><div class="wdet">20 min, równe tempo</div></div></div>
+      <div class="wrk-item" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Curl biceps — hantle 7kg</div><div class="wdet">4 × 12 powtórzeń</div></div></div>
+      <div class="wrk-item" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Pompki</div><div class="wdet">4 × 15 powtórzeń</div></div></div>
+      <div class="wrk-item" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Plank</div><div class="wdet">3 × 45 sekund</div></div></div>
+      <div class="wrk-item" onclick="toggleWrk(this)"><div class="wchk"></div><div><div class="wname">Roller — kręgosłup</div><div class="wdet">10 min rozciąganie</div></div></div>
+    </div>
+    <button class="gen-btn" onclick="genWorkout()">✦ Generuj plan AI na dziś</button>
+    <div class="stxt" id="w-status" style="margin-bottom:10px"></div>
+    <div class="sep">Kalorie — cel 2000 kcal</div>
+    <div class="cal-card">
+      <div class="cal-top">
+        <div><div class="cal-num" id="cal-e">0</div><div class="cal-unit">kcal zjedzone</div></div>
+        <div class="cal-right"><div class="cal-rem" id="cal-r">2000</div><div class="cal-rem-lbl">pozostało</div></div>
+      </div>
+      <div class="cal-bg"><div class="cal-fill" id="cal-b" style="width:0%"></div></div>
+    </div>
+    <div class="stxt" id="cal-hint" style="text-align:left;margin-bottom:8px">Wpisz posiłki — AI przeliczy kalorie</div>
+    <div class="fi-row">
+      <input class="fi" type="text" id="food-inp" placeholder="Opisz posiłek, AI policzy..." onkeydown="if(event.key==='Enter')addFood()"/>
+      <button class="fa" onclick="addFood()">AI +</button>
+    </div>
+    <div class="stxt" id="food-st" style="text-align:left;margin-bottom:6px"></div>
+    <div id="food-list" style="margin-bottom:14px"></div>
+    <div class="sep">Nikotyna</div>
+    <div class="nic-card">
+      <div class="nic-num" id="nic-n">0</div>
+      <div class="nic-lbl">dni bez nikotyny</div>
+      <div class="nic-msg" id="nic-m">Każda godzina bez nikotyny to inwestycja w siebie.</div>
+      <div class="nic-btns">
+        <button class="nib p" onclick="startNic()">Zaczynam</button>
+        <button class="nib" onclick="resetNic()">Wpadka</button>
+      </div>
+    </div>
+    <div class="sep">Notatki & journal</div>
+    <textarea class="note-inp" id="note-inp" placeholder="Myśl, cel, refleksja dnia..."></textarea>
+    <button class="note-save" onclick="saveNote()">Zapisz notatkę →</button>
+    <div id="notes-list" style="margin-bottom:32px"></div>
+  </div>
+</div>
+
+<!-- ═══════ NAV ═══════ -->
+<div class="nav">
+  <button class="nb active" onclick="sw('today',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    <span class="nb-lbl">Dziś</span>
+  </button>
+  <button class="nb" onclick="sw('focus',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span class="nb-lbl">Focus</span>
+  </button>
+  <button class="nb" onclick="sw('mentor',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span class="nb-lbl">Mentor</span>
+  </button>
+  <button class="nb" onclick="sw('progress',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <span class="nb-lbl">Progres</span>
+  </button>
+  <button class="nb" onclick="sw('life',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    <span class="nb-lbl">Życie</span>
+  </button>
+</div>
+</div>
+
+<script>
+// ═══ API ═══
+async function callAI(system,messages){
+  var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages,max_tokens:1000})});
+  var d=await r.json();if(d.error)throw new Error(d.error);return d.text;
+}
+
+// ═══ STATE ═══
+var state={
+  bodyXP:parseFloat(localStorage.getItem('bodyXP')||0),
+  agencyXP:parseFloat(localStorage.getItem('agencyXP')||0),
+  wrkDone:false,calOk:false,bizDone:false,nnAllDone:false,
+  wrkCount:0,bizT:0,bizA:parseInt(localStorage.getItem('bizAll')||0),
+  cal:0,foods:[],
+  nicS:localStorage.getItem('nicStart')?new Date(localStorage.getItem('nicStart')):null,
+  notes:JSON.parse(localStorage.getItem('notes')||'[]'),
+  plans:JSON.parse(localStorage.getItem('plans')||'[]')
+};
+
+// ═══ QUOTES ═══
+var quotes=[
+  {t:"WE SUFFER MORE IN IMAGINATION THAN IN REALITY.",a:"— Seneca",big:true},
+  {t:"TO BECOME A STAR YOU MUST BURN.",a:"",big:true},
+  {t:"I WAS BORN TO BE GREAT.",a:"",big:true},
+  {t:'"WHAT IF I FALL?" BRO — WHAT IF YOU FLY.',a:"",big:true},
+  {t:"Znoś cierpliwie to, czego zmienić nie możesz.",a:"— Seneka",big:false},
+  {t:"NO ONE IS COMING TO SAVE YOU.",a:"",big:true},
+  {t:"Nie trać czasu na zastanawianie się, jakim człowiekiem być. Po prostu bądź nim.",a:"— Marek Aureliusz",big:false},
+  {t:"STOP WAITING. START DOING.",a:"",big:true},
+  {t:"YOUR FUTURE SELF IS WATCHING YOU RIGHT NOW.",a:"",big:true},
+  {t:"DISCIPLINE IS THE HIGHEST FORM OF SELF LOVE.",a:"",big:true},
+  {t:"Nie możesz kontrolować co się wydarzy — tylko jak reagujesz.",a:"— Epiktet",big:false},
+  {t:"Najpiękniejsza zemsta to nie być podobnym do swoich wrogów.",a:"— Marek Aureliusz",big:false},
+];
+var qi=0;
+function renderQ(){
+  var q=quotes[qi];
+  var el=document.getElementById('q-text');
+  el.textContent=q.t;
+  el.className='quote-text'+(q.big?' big':'');
+  document.getElementById('q-author').textContent=q.a;
+  var dots=document.getElementById('q-dots');dots.innerHTML='';
+  quotes.forEach(function(_,i){var d=document.createElement('button');d.className='qdot'+(i===qi?' on':'');d.onclick=function(){qi=i;renderQ();};dots.appendChild(d);});
+}
+renderQ();
+setInterval(function(){qi=(qi+1)%quotes.length;renderQ();},9000);
+
+// ═══ DATE ═══
+var today=new Date();
+var days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+var months=['Stycznia','Lutego','Marca','Kwietnia','Maja','Czerwca','Lipca','Sierpnia','Września','Października','Listopada','Grudnia'];
+document.getElementById('today-day').textContent=days[today.getDay()];
+document.getElementById('today-date').textContent=today.getDate()+' '+months[today.getMonth()];
+
+// ═══ NAV ═══
+function sw(n,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+n).classList.add('active');btn.classList.add('active');
+}
+
+// ═══ SAVE ═══
+function saveState(){
+  localStorage.setItem('bodyXP',state.bodyXP);localStorage.setItem('agencyXP',state.agencyXP);
+  localStorage.setItem('bizAll',state.bizA);localStorage.setItem('notes',JSON.stringify(state.notes));
+  localStorage.setItem('plans',JSON.stringify(state.plans));
+  if(state.nicS)localStorage.setItem('nicStart',state.nicS.toISOString());
+}
+
+// ═══ XP ═══
+function animXP(pid,bid,gid,val){
+  var p=document.getElementById(pid);if(!p)return;
+  p.textContent=val.toFixed(1)+'%';p.classList.remove('pop');void p.offsetWidth;p.classList.add('pop');
+  document.getElementById(bid).style.width=Math.min(val,100)+'%';
+  if(gid&&val>0){var g=document.getElementById(gid);if(g){g.textContent='+'+val.toFixed(1)+'%';g.classList.add('show');}}
+}
+function updateXP(){animXP('body-pct','body-bar','body-gain',state.bodyXP);animXP('agency-pct','agency-bar','agency-gain',state.agencyXP);}
+function gainBody(v){state.bodyXP=parseFloat((state.bodyXP+v).toFixed(1));saveState();updateXP();}
+function gainAgency(v){state.agencyXP=parseFloat((state.agencyXP+v).toFixed(1));saveState();updateXP();}
+
+// ═══ NN ═══
+var nnD={};
+function toggleNN(el,k){
+  var done=el.classList.contains('done');
+  if(done){el.classList.remove('done');el.querySelector('.nn-chk').innerHTML='';delete nnD[k];}
+  else{el.classList.add('done');el.querySelector('.nn-chk').innerHTML='✓';nnD[k]=1;}
+  var c=Object.keys(nnD).length;
+  document.getElementById('nn-lbl').textContent=c+' z 5 ukończonych';
+  var p=c/5*100;
+  document.getElementById('nn-bar').style.width=p+'%';
+  document.getElementById('h-nn').textContent=c+'/5';
+  document.getElementById('h-nn-bar').style.width=p+'%';
+  var was=state.nnAllDone;state.nnAllDone=(c===5);
+  if(state.nnAllDone&&!was){gainBody(0.2);gainAgency(0.3);}
+}
+
+// ═══ MOMENTS ═══
+var moments={
+  morning:[
+    {n:'Wstań od razu',s:'Wstanie to pierwsze zwycięstwo dnia'},
+    {n:'Zimna woda na twarz',s:'30 sekund — reset układu nerwowego'},
+    {n:'Nie patrz w telefon 20 min',s:'Zacznij dzień od siebie, nie od innych'},
+    {n:'Zjedz śniadanie',s:'Energia na pierwszą sesję pracy'},
+    {n:'Start Pomodoro przed 10:00',s:'Pierwsza praca rano = wygrany dzień'}
+  ],
+  home:[
+    {n:'Zjedz obiad',s:'Spokojnie, nie przy telefonie'},
+    {n:'Wyjdź z psem — 15 min',s:'Dotlenienie i mentalny reset'},
+    {n:'Prysznic',s:'Reset przed pracą'},
+    {n:'Start Pomodoro 25 min',s:'Nie nastawiaj się na cały wieczór'}
+  ],
+  weekend:[
+    {n:'Wstań o stałej godzinie',s:'Rytm to fundament — weekend nie zmienia'},
+    {n:'Kawa przy biurku, nie przy sofie',s:'Miejsce pracy = tryb pracy'},
+    {n:'Telefon twarzą w dół',s:'Instagram to złodziej czasu'},
+    {n:'Jedno zadanie na dziś',s:'Tylko jedno — rozbij je na kroki'},
+    {n:'Start — tylko 25 minut',s:'Weekend to szansa, nie urlop od marzeń'}
+  ]
+};
+var curMoment='morning';
+function setMoment(btn,k){
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');curMoment=k;renderRoutine();
+}
+function renderRoutine(){
+  var steps=moments[curMoment];var el=document.getElementById('routine-steps');el.innerHTML='';
+  steps.forEach(function(s,i){
+    var d=document.createElement('div');d.className='rstep';
+    d.innerHTML='<div class="rnum">'+String(i+1).padStart(2,'0')+'</div><div><div class="rtxt">'+s.n+'</div><div class="rsub">'+s.s+'</div></div>';
+    el.appendChild(d);
+  });
+}
+renderRoutine();
+
+// ═══ FOCUS ═══
+var cdInt=null;
+async function breakdownTask(){
+  var task=document.getElementById('focus-task').value.trim();if(!task)return;
+  var bd=document.getElementById('breakdown');var bs=document.getElementById('breakdown-steps');
+  bs.innerHTML='<div style="font-size:12px;color:var(--txt2);font-style:italic;padding:4px 0">AI rozbija zadanie...</div>';
+  bd.classList.add('on');
+  try{
+    var txt=await callAI(
+      'Coach produktywności. Rozbij zadanie na 3-4 konkretne mikrokroki (każdy max 10 słów, po polsku). TYLKO JSON: {"steps":["krok1","krok2","krok3"]}. Zero innego tekstu.',
+      [{role:'user',content:'Zadanie: '+task}]
+    );
+    var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    bs.innerHTML='';
+    p.steps.forEach(function(s){
+      var div=document.createElement('div');div.className='bstep';
+      div.innerHTML='<div class="bdot"></div><div class="btxt">'+s+'</div>';bs.appendChild(div);
+    });
+    startCD();
+  }catch(e){bs.innerHTML='<div style="font-size:12px;color:var(--txt2)">Błąd połączenia.</div>';}
+}
+function startCD(){
+  var cw=document.getElementById('cdcard');cw.classList.add('on');
+  var left=300;
+  var msgs=['Przygotuj się. Za 5 minut nie ma już wymówek.','Kawa gotowa? Biurko czyste? Zaraz start.','Ostatnie 2 minuty — telefon odłóż.','Zaraz zaczynasz. Wiesz co robić.'];
+  if(cdInt)clearInterval(cdInt);
+  cdInt=setInterval(function(){
+    left--;
+    var m=Math.floor(left/60),s=left%60;
+    document.getElementById('cd-num').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    document.getElementById('cd-msg').textContent=msgs[Math.min(Math.floor((300-left)/80),msgs.length-1)];
+    if(left<=0){clearInterval(cdInt);skipCD();}
+  },1000);
+}
+function skipCD(){clearInterval(cdInt);document.getElementById('cdcard').classList.remove('on');if(!tRun)toggleTimer();}
+
+// ═══ TIMER ═══
+var tLeft=1500,tRun=false,tInt=null;
+function toggleTimer(){
+  if(tRun){clearInterval(tInt);tRun=false;document.getElementById('r-btn').textContent='Kontynuuj';}
+  else{
+    tRun=true;document.getElementById('r-btn').textContent='Pauza';
+    tInt=setInterval(function(){
+      tLeft--;
+      var m=Math.floor(tLeft/60),s=tLeft%60;
+      document.getElementById('r-timer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+      document.getElementById('t-bar').style.width=((1500-tLeft)/1500*100)+'%';
+      if(tLeft<=0){clearInterval(tInt);tRun=false;document.getElementById('r-btn').textContent='Start';document.getElementById('r-timer').textContent='DONE';}
+    },1000);
+  }
+}
+function resetTimer(){clearInterval(tInt);tRun=false;tLeft=1500;document.getElementById('r-timer').textContent='25:00';document.getElementById('r-btn').textContent='Start';document.getElementById('t-bar').style.width='0%';}
+
+// ═══ PLAN ═══
+function savePlan(){
+  var date=document.getElementById('plan-date').value.trim();
+  var text=document.getElementById('plan-inp').value.trim();if(!text)return;
+  state.plans.unshift({date:date||'Brak daty',text:text});
+  document.getElementById('plan-date').value='';document.getElementById('plan-inp').value='';
+  saveState();renderPlans();
+}
+function renderPlans(){
+  var l=document.getElementById('plan-entries');l.innerHTML='';
+  state.plans.slice(0,8).forEach(function(p){
+    var d=document.createElement('div');d.className='pentry';
+    d.innerHTML='<div class="pentry-date">'+p.date+'</div><div class="pentry-txt">'+p.text+'</div>';l.appendChild(d);
+  });
+}
+
+// ═══ NICOTINE ═══
+function startNic(){state.nicS=new Date();saveState();updNic();}
+function resetNic(){state.nicS=null;localStorage.removeItem('nicStart');document.getElementById('nic-n').textContent='0';document.getElementById('nic-m').textContent='Wpadki się zdarzają. Zacznij od nowa — teraz.';}
+function updNic(){
+  if(!state.nicS)return;
+  var d=Math.floor((new Date()-state.nicS)/86400000);
+  document.getElementById('nic-n').textContent=d;document.getElementById('h-nic').textContent=d;
+  var msgs=['Dzień 1. Najtrudniejszy. Twój mózg się regeneruje.',''+d+' dni. Skupienie rośnie.',''+d+' dni czysty. Więcej niż większość.',''+d+' dni. Ciało Ci dziękuje.'];
+  document.getElementById('nic-m').textContent=msgs[Math.min(d,msgs.length-1)];
+}
+
+// ═══ CALORIES ═══
+function updCal(){
+  var c=state.cal;
+  document.getElementById('cal-e').textContent=c;document.getElementById('cal-r').textContent=Math.max(0,2000-c);
+  var p=Math.min(100,Math.round(c/2000*100));document.getElementById('cal-b').style.width=p+'%';
+  var was=state.calOk;
+  if(c>=1500&&c<=2000){state.calOk=true;if(!was)gainBody(0.2);document.getElementById('cal-hint').textContent='Kalorie w normie — sylwetka rośnie (+0.2%)';}
+  else if(c<1500&&c>0){state.calOk=false;document.getElementById('cal-hint').textContent='Za mało kalorii — jedz więcej';}
+  else if(c>2000){state.calOk=false;document.getElementById('cal-hint').textContent='Przekroczono cel — jutro korekta';}
+  else{document.getElementById('cal-hint').textContent='Wpisz posiłki — AI przeliczy kalorie';}
+}
+function renderFoods(){
+  var l=document.getElementById('food-list');l.innerHTML='';
+  state.foods.forEach(function(f,i){
+    var d=document.createElement('div');d.className='food-item';
+    d.innerHTML='<div><div class="food-name">'+f.name+'</div></div><div style="display:flex;align-items:center;gap:8px"><span class="food-cal">'+f.cal+' kcal</span><button class="fdel" onclick="removeFood('+i+')">×</button></div>';
+    l.appendChild(d);
+  });
+}
+function removeFood(i){state.cal-=state.foods[i].cal;state.foods.splice(i,1);renderFoods();updCal();}
+async function addFood(){
+  var inp=document.getElementById('food-inp');var desc=inp.value.trim();if(!desc)return;
+  inp.value='';var st=document.getElementById('food-st');st.textContent='AI szacuje...';
+  try{
+    var txt=await callAI('Ekspert żywienia. TYLKO JSON: {"name":"nazwa po polsku","cal":liczba}. Zero innego tekstu.',[{role:'user',content:'Posiłek: '+desc}]);
+    var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    state.foods.push({name:p.name,cal:parseInt(p.cal)});state.cal+=parseInt(p.cal);
+    renderFoods();updCal();st.textContent='Dodano: '+p.name+' — '+p.cal+' kcal';
+    setTimeout(function(){st.textContent='';},3000);
+  }catch(e){st.textContent='Błąd połączenia.';}
+}
+
+// ═══ NOTES ═══
+function renderNotes(){
+  var l=document.getElementById('notes-list');l.innerHTML='';
+  state.notes.slice(0,10).forEach(function(n){
+    var d=document.createElement('div');d.className='note-item';
+    d.innerHTML='<div class="note-date">'+n.date+'</div><div class="note-txt">'+n.text+'</div>';l.appendChild(d);
+  });
+}
+function saveNote(){
+  var inp=document.getElementById('note-inp');var txt=inp.value.trim();if(!txt)return;
+  var now=new Date();var ds=now.toLocaleDateString('pl-PL',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  state.notes.unshift({date:ds,text:txt});inp.value='';saveState();renderNotes();
+}
+
+// ═══ MENTOR ═══
+var mH=[];
+async function sendMentor(){
+  var inp=document.getElementById('mentor-inp');var txt=inp.value.trim();if(!txt)return;
+  inp.value='';var msgs=document.getElementById('mentor-msgs');
+  var u=document.createElement('div');u.className='msg user';u.textContent=txt;msgs.appendChild(u);
+  var a=document.createElement('div');a.className='msg ai';a.textContent='...';a.style.animation='pulse 1.2s infinite';msgs.appendChild(a);
+  msgs.scrollTop=msgs.scrollHeight;mH.push({role:'user',content:txt});
+  try{
+    var reply=await callAI(
+      'Jesteś mentalnym mentorem biznesowym dla 16-letniego Aleksandra z Polski. Buduje agencję AI (AI callers, Meta Ads, kliniki fizjo). Sprzedaje przez axario.pl i Useme. Łatwo się zniechęca gdy wyniki nie są natychmiastowe. Mów po polsku. Bądź bezpośredni — krótko, mocno, konkretnie jak Marek Aureliusz. Max 3 zdania. Daj jeden konkretny następny krok.',
+      mH
+    );
+    mH.push({role:'assistant',content:reply});
+    a.style.animation='';a.textContent=reply;msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){a.style.animation='';a.textContent='Błąd połączenia.';}
+}
+
+// ═══ BIZ ═══
+function addContact(){
+  state.bizT++;state.bizA++;
+  document.getElementById('biz-t').textContent=state.bizT;document.getElementById('biz-a').textContent=state.bizA;
+  document.getElementById('biz-bar').style.width=Math.min(100,state.bizT/5*100)+'%';
+  var was=state.bizDone;state.bizDone=(state.bizT>=5);if(state.bizDone&&!was)gainAgency(0.5);saveState();
+  var tips=['Jeden. Kontynuuj.','Dwa. Momentum rośnie.','Trzy z pięciu.','Cztery. Jeszcze jedna.','5/5 — cel osiągnięty. +0.5% agencji!'];
+  document.getElementById('biz-tip').textContent=tips[Math.min(state.bizT-1,tips.length-1)];
+}
+
+// ═══ WORKOUT ═══
+function toggleWrk(el){
+  var done=el.classList.contains('done');var cc=el.querySelector('.wchk');
+  if(done){el.classList.remove('done');cc.innerHTML='';state.wrkCount=Math.max(0,state.wrkCount-1);}
+  else{el.classList.add('done');cc.innerHTML='✓';state.wrkCount++;}
+  var total=document.querySelectorAll('#w-list .wrk-item').length;
+  var was=state.wrkDone;state.wrkDone=(state.wrkCount>=total);
+  if(state.wrkDone&&!was){gainBody(0.3);gainAgency(0.2);}updateXP();
+}
+async function genWorkout(){
+  var st=document.getElementById('w-status');st.textContent='AI generuje plan...';
+  try{
+    var txt=await callAI(
+      'Trener personalny. TYLKO JSON: {"exercises":[{"name":"nazwa po polsku","detail":"seria x powt"}]}. 5 ćwiczeń TYLKO z: rowerek stacjonarny, hantle do 7kg, roller do pleców, pompki, przysiady, plank.',
+      [{role:'user',content:'Plan treningowy na dziś.'}]
+    );
+    var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    var l=document.getElementById('w-list');l.innerHTML='';state.wrkCount=0;state.wrkDone=false;
+    p.exercises.forEach(function(ex){
+      var div=document.createElement('div');div.className='wrk-item';div.onclick=function(){toggleWrk(div);};
+      div.innerHTML='<div class="wchk"></div><div><div class="wname">'+ex.name+'</div><div class="wdet">'+ex.detail+'</div></div>';
+      l.appendChild(div);
+    });
+    st.textContent='Plan wygenerowany.';setTimeout(function(){st.textContent='';},2000);updateXP();
+  }catch(e){st.textContent='Błąd generowania.';}
+}
+
+// ═══ INIT ═══
+document.getElementById('biz-a').textContent=state.bizA;
+renderNotes();renderPlans();updNic();updateXP();
+</script>
+</body>
+</html>
